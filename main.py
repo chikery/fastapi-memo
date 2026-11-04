@@ -1,6 +1,14 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
+
+class MemoCreate(BaseModel):   # 보낼 때 양식
+    text: str
+
+class Memo(BaseModel):         # 돌려줄 때 양식
+    id: int
+    text: str
 
 @app.get("/hello")
 def hello():
@@ -25,3 +33,13 @@ def search(q: str, limit: int = 10):
 @app.get("/users/{user_id}/items")
 def user_items(user_id: int, q: str | None = None ):
     return {"user_id": user_id, "q": q}
+
+@app.post("/memos", status_code=201)
+def create_memo(memo: MemoCreate) -> Memo:
+    new = {"id": len(MEMOS) + 1, "text": memo.text}   # 서버가 번호를 붙임
+    MEMOS.append(new)                                 # 리스트에 저장
+    return new
+
+@app.get("/memos")
+def list_memos() -> list[Memo]:
+    return MEMOS
